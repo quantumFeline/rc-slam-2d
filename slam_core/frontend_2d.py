@@ -100,13 +100,15 @@ class SLAM2DFrontend:
         true_odometry = []
         for i in range(len(self.true_poses) - 1):
             ### TODO ###
-            ...
+            delta_x = self.true_poses[i + 1][0][0] - self.true_poses[i][0][0]
+            delta_y = self.true_poses[i + 1][0][1] - self.true_poses[i][0][1]
+            delta_theta = self.true_poses[i + 1][0][2] - self.true_poses[i][0][2]
             ### END TODO ###
-            true_odometry.append((delta_x, delta_y, delta_theta))
+            true_odometry.append(((delta_x, delta_y), delta_theta))
 
         # Add noise to odometry measurements
         for odometry in true_odometry:
-            delta_x, delta_y, delta_theta = odometry
+            (delta_x, delta_y), delta_theta = odometry
             delta_x += random.gauss(0, self.odometry_noise_std)
             delta_y += random.gauss(0, self.odometry_noise_std)
             delta_theta += random.gauss(0, self.odometry_noise_std)
@@ -155,9 +157,12 @@ class SLAM2DFrontend:
         current_angle = current_pose_val[1]
         for lm in landmarks:
             ### TODO ###
-            ...
+            distance = float(np.linalg.norm(np.array([current_x, current_y]) - lm[:2]))
+            x_dist = current_x - lm[0]
+            y_dist = current_y - lm[1]
+            angle = np.atan2(y_dist, x_dist)
             ### END TODO ###
-            distance_observations.append(dist)
+            distance_observations.append(distance)
             angle_observations.append(angle)
 
         return distance_observations, angle_observations
@@ -172,8 +177,8 @@ class SLAM2DFrontend:
         # Perturb true poses for a better "guess" scenario than just true values
         perturbed_poses = [
             (
-                p[0][0] + random.gauss(0, self.initial_guess_std),
-                p[0][1] + random.gauss(0, self.initial_guess_std),
+                (p[0][0] + random.gauss(0, self.initial_guess_std),
+                p[0][1] + random.gauss(0, self.initial_guess_std)),
                 p[1] + random.gauss(0, self.initial_guess_std),
             )
             for p in self.true_poses
