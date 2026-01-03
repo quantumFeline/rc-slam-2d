@@ -30,11 +30,11 @@ class SLAM2DBackend:
         sensor_noise_std: float = 1.0,
     ) -> optimize.OptimizeResult:
         # Prepare the initial flat parameter vector
-        # We optimize over poses and landmarks simuulatenously, so they have to be packed into a single, flat numpy array
+        # We optimize over poses and landmarks simultaneously, so they have to be packed into a single, flat numpy array
         # Parameters: [pose_0, pose_1, ..., pose_N, lm1_x, lm1_y, lm2_x, lm2_y, ...]
         ### TODO ###
-        num_poses = ...
-        initial_params = ...
+        num_poses = len(initial_poses_guess)
+        initial_params = np.array(initial_poses_guess) + np.array(initial_landmarks_guess)
         ### END TODO ###
 
         # Optimize
@@ -69,8 +69,8 @@ class SLAM2DBackend:
         """
         # Unpack parameters
         ### TODO ###
-        poses = ...
-        landmark_coords = ...
+        poses = params[:num_poses]
+        landmark_coords = params[num_poses:]
         ### END TODO ###
 
         # Reconstruct landmarks list [(x,y), ...]
@@ -87,8 +87,16 @@ class SLAM2DBackend:
         # 1. Movement Penalty (Odometry Error)
         # For each odometry measurement, calculate the expected movement based on the current and next pose, and compare to the measured movement.
         ### TODO ###
+        calc_movements = []
+        for i in range(len(poses) - 1):
+            calc_movements.append(np.linalg.norm(poses[i + 1] - poses[i]))
+
+        diff_poses = np.array(calc_movements) - np.array(measured_movements)
+        # movement_penalty = np.sum(diff_poses**2) * odom_weight
+
         movement_penalty = 0.0
         for i in range(len(poses) - 1):
+
             movement_penalty += ...
 
         movement_penalty *= odom_weight
