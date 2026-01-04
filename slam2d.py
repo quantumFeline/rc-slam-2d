@@ -17,8 +17,8 @@ def main():
 
     frontend = SLAM2DFrontend(
         initial_pose=((0, 0), 0),
-        trajectory_shape="square",
-        num_steps=4,
+        trajectory_shape="circle",
+        num_steps=6,
         odometry_noise_std=odometry_noise,
         sensor_noise_std=sensor_noise,
         initial_guess_std=initial_guess_noise,

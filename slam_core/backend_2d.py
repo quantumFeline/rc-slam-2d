@@ -82,7 +82,7 @@ class SLAM2DBackend:
         num_pose_params = num_poses * 3
         poses = params[:num_pose_params].reshape(num_pose_params//3, 3) # x, y, angle
         poses_xy = poses[:, 0:2]
-        # poses_angle = poses[:, 2]
+        poses_angle = poses[:, 2]
         landmark_coords = params[num_pose_params:].reshape((len(params)-num_pose_params)//2, 2)
         ### END TODO ###
 
@@ -101,13 +101,17 @@ class SLAM2DBackend:
         # For each odometry measurement, calculate the expected movement based on the current and next pose, and compare to the measured movement.
         ### TODO ###
         calc_movements = []
+        calc_angles = []
         for i in range(len(poses_xy) - 1):
             calc_movements.append(poses_xy[i + 1] - poses_xy[i])
+            calc_angles.append(poses_angle[i+1] - poses_angle[i])
 
         print("measured movement:", measured_movements[0])
         odometry_measurements = [(measurement.delta_x, measurement.delta_y) for measurement in measured_movements]
+        odometry_angles = [measurement.delta_theta for measurement in measured_movements]
         diff_poses = np.array(calc_movements) - np.array(odometry_measurements)
-        movement_penalty = np.sum(np.linalg.norm(diff_poses, axis=1)**2) * odom_weight
+        diff_angles = (np.array(calc_angles) - np.array(odometry_angles) + np.pi) % (2*np.pi) - np.pi
+        movement_penalty = np.sum(np.linalg.norm(diff_poses, axis=1)**2) * odom_weight + np.sum(diff_angles**2)
         # movement_penalty = 0.0
         # for pose_diff in diff_poses:
         #
@@ -138,7 +142,8 @@ class SLAM2DBackend:
             angles = np.array([np.arctan2(distance_y, distance_x) for distance_x, distance_y in distances_xy])
             # print("angles", angles)
             # print("measurement angles", measurement.angles)
-            angle_penalty += np.sum(np.abs(angles - measurement.angles))
+            angle_diff = (angles - measurement.angles + np.pi) % (2 * np.pi) - np.pi
+            angle_penalty += np.sum(np.abs(angle_diff))
 
         distance_penalty *= sensor_weight
         angle_penalty *= sensor_weight

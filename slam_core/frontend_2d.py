@@ -43,13 +43,12 @@ class SLAM2DFrontend:
             self.true_poses = [self.initial_pose]
             x, y = self.initial_pose[0]
             angle = self.initial_pose[1]
-            self.true_poses.append(self.initial_pose)
             ### TODO ###
             SQUARE_SIDE_LEN = 2
             directions = [[1, 0, 0], # x multiplier, y multiplier, angle
-                          [0, 1, 90],
-                          [-1, 0, 180],
-                          [0, -1, 270]]
+                          [0, 1, np.pi / 2],
+                          [-1, 0, np.pi],
+                          [0, -1, - np.pi / 2]]
             dir_i = 0
             for step in range(self.num_steps):
                 if (step + 1) % SQUARE_SIDE_LEN == 0: # turn
@@ -65,13 +64,13 @@ class SLAM2DFrontend:
             angle = self.initial_pose[1]
             self.true_poses.append(self.initial_pose)
             ### TODO ###
-            TURN_ANGLE = 15
+            TURN_ANGLE = np.radians(15)
             for i in range(self.num_steps):
                 x = x + np.cos(angle)
                 y = y + np.sin(angle)
                 self.true_poses.append(((x, y), angle))
                 angle += TURN_ANGLE
-                angle % 360
+                angle % (2 * np.pi)
             ### END TODO ###
         elif self.trajectory_shape == "line":
             self.true_poses = [self.initial_pose]
