@@ -45,7 +45,7 @@ class SLAM2DFrontend:
             angle = self.initial_pose[1]
             self.true_poses.append(self.initial_pose)
             ### TODO ###
-            SQUARE_SIDE_LEN = 10
+            SQUARE_SIDE_LEN = 2
             directions = [[1, 0, 0], # x multiplier, y multiplier, angle
                           [0, 1, 90],
                           [-1, 0, 180],
@@ -54,10 +54,10 @@ class SLAM2DFrontend:
             for step in range(self.num_steps):
                 if (step + 1) % SQUARE_SIDE_LEN == 0: # turn
                     dir_i = (dir_i + 1) % 4
-                x = directions[dir_i][0] * x
-                y = directions[dir_i][1] * y
+                x += directions[dir_i][0]
+                y += directions[dir_i][1]
                 angle = directions[dir_i][2]
-                self.true_poses.append(Pose2D((x, y), angle))
+                self.true_poses.append(((x, y), angle))
 
             ### END TODO ###
         elif self.trajectory_shape == "circle":
@@ -69,7 +69,7 @@ class SLAM2DFrontend:
             for i in range(self.num_steps):
                 x = x + np.cos(angle)
                 y = y + np.sin(angle)
-                self.true_poses.append(Pose2D((x, y), angle))
+                self.true_poses.append(((x, y), angle))
                 angle += TURN_ANGLE
                 angle % 360
             ### END TODO ###
@@ -82,7 +82,7 @@ class SLAM2DFrontend:
             for _ in range(self.num_steps):
                 x = x + np.cos(angle)
                 y = y + np.sin(angle)
-                self.true_poses.append(Pose2D((x, y), angle))
+                self.true_poses.append(((x, y), angle))
             ### END TODO ###
 
     def generate_measurements(self) -> None:
@@ -102,7 +102,7 @@ class SLAM2DFrontend:
             ### TODO ###
             delta_x = self.true_poses[i + 1][0][0] - self.true_poses[i][0][0]
             delta_y = self.true_poses[i + 1][0][1] - self.true_poses[i][0][1]
-            delta_theta = self.true_poses[i + 1][0][2] - self.true_poses[i][0][2]
+            delta_theta = self.true_poses[i + 1][1] - self.true_poses[i][1]
             ### END TODO ###
             true_odometry.append(((delta_x, delta_y), delta_theta))
 
